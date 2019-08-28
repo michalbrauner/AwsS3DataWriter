@@ -7,6 +7,8 @@
 
 using AwsStringUtils = Aws::Utils::StringUtils;
 
+Aws::SDKOptions options;
+
 bool putS3Object(const Aws::String& s3Region, const Aws::String& s3BucketName, const Aws::String& s3ObjectName, const Aws::String& data)
 {
 	Aws::Client::ClientConfiguration clientConfiguration;
@@ -23,26 +25,27 @@ bool putS3Object(const Aws::String& s3Region, const Aws::String& s3BucketName, c
 	inputData->write(data.c_str(), data.size());
 
 	objectRequest.SetBody(inputData);
-	
+			
 	auto putObjectOutcome = s3Client.PutObject(objectRequest);
-
-	if (!putObjectOutcome.IsSuccess()) {
-		auto error = putObjectOutcome.GetError();
-		std::cout << "ERROR: " << error.GetExceptionName() << ": "
-			<< error.GetMessage() << ": "
-			<< std::endl;
-	}
 
 	return putObjectOutcome.IsSuccess();
 }
 
-EXPORT bool writeData(wchar_t *region, wchar_t *bucketName, wchar_t *directory, wchar_t* filename, wchar_t *data)
+EXPORT void initializeAwsApi()
 {
-	Aws::SDKOptions options;
 	options.loggingOptions.logLevel = Aws::Utils::Logging::LogLevel::Trace;
-	bool success = false;
 
 	Aws::InitAPI(options);
+}
+
+EXPORT void shutdownAwsApi()
+{
+	Aws::ShutdownAPI(options);
+}
+
+EXPORT bool writeData(wchar_t *region, wchar_t *bucketName, wchar_t *directory, wchar_t* filename, wchar_t *data)
+{	
+	bool success = false;
 
 	{		
 		const Aws::String s3BucketName(AwsStringUtils::FromWString(bucketName));
@@ -57,8 +60,6 @@ EXPORT bool writeData(wchar_t *region, wchar_t *bucketName, wchar_t *directory, 
 
 		success = putS3Object(s3Region, s3BucketName, s3ObjectName, s3Data);
 	}
-
-	Aws::ShutdownAPI(options);
 
 	return success;
 }
