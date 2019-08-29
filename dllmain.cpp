@@ -33,8 +33,6 @@ bool putS3Object(const Aws::String& s3Region, const Aws::String& s3BucketName, c
 
 EXPORT void initializeAwsApi()
 {
-	options.loggingOptions.logLevel = Aws::Utils::Logging::LogLevel::Trace;
-
 	Aws::InitAPI(options);
 }
 
